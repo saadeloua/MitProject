@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Listes des roles</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Role</th>
+                <th>Id</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for role in roles %}
+            <tr>
+                <td><a href="{{ path('role_show', { 'id': role.id }) }}">{{ role.role }}</a></td>
+                <td>{{ role.id }}</td>
+                <td>
+                  <a href="{{ path('role_edit', { 'id': role.id }) }}" class="btn btn-outline-primary">edit</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('role_new') }}" class="btn btn-outline-info">Création role</a>
+
+{% endblock %}

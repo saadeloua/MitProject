@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Création role</h1>
+    <br/>
+    {{ form_start(form) }}
+    <div class="form-group">
+        {{ form_widget(form) }}
+        <input type="submit" value="Enregistrer" class="btn btn-success "/>
+    </div>
+    {{ form_end(form) }}
+
+            <a href="{{ path('role_index') }}" class="btn btn-outline-info">Afficher la liste des roles</a>
+{% endblock %}

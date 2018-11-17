@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Role</h1>
+
+    <table class="table">
+        <tbody>
+        <tr>
+            <th>Id</th>
+            <td>{{ role.id }}</td>
+        </tr>
+            <tr>
+                <th>Role</th>
+                <td>{{ role.role }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+
+            <a href="{{ path('role_index') }}" class="btn btn-outline-info">Afficher la liste des roles</a>
+            <a href="{{ path('role_edit', { 'id': role.id }) }}" class="btn btn-outline-success">Modifier</a>
+            <br/>
+            <br/>
+            {{ form_start(delete_form) }}
+                <input type="submit" value="Supprimer" class="btn btn-danger">
+            {{ form_end(delete_form) }}
+{% endblock %}
