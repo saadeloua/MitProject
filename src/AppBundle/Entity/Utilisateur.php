@@ -21,7 +21,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  *     message="Déja utilisé"
  * )
  */
-class Utilisateur implements UserInterface, \Serializable
+class Utilisateur
 {
     /**
      * @var string
@@ -232,38 +232,5 @@ class Utilisateur implements UserInterface, \Serializable
     {
         return $this->role;
     }
-
-    public function getRoles()
-    {
-        return array('ROLE_USER');
-    }
-
-    public function eraseCredentials()
-     {
-     }
-
-    /** @see \Serializable::serialize() */
-       public function serialize()
-       {
-           return serialize(array(
-               $this->id,
-               $this->username,
-               $this->password,
-               // see section on salt below
-               // $this->salt,
-           ));
-       }
-
-       /** @see \Serializable::unserialize() */
-       public function unserialize($serialized)
-       {
-           list (
-               $this->id,
-               $this->username,
-               $this->password,
-               // see section on salt below
-               // $this->salt
-           ) = unserialize($serialized, array('allowed_classes' => false));
-       }
 
 }

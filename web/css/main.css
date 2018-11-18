@@ -1,3 +1,3 @@
-#appbundle_utilisateur_password{
-  -webkit-text-security: disc;  
+#appbundle_utilisateur_password, #form_password{
+  -webkit-text-security: disc;
 }

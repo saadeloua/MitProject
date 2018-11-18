@@ -16,5 +16,8 @@
             {{ form_start(delete_form) }}
                 <input type="submit" value="Supprimer" class="btn btn-danger">
             {{ form_end(delete_form) }}
+            <br/>
+            <br/>
+            <a href="{{ path('utilisateur_logout') }}" class="btn btn-outline-danger">Se déconnecter</a>
 
 {% endblock %}

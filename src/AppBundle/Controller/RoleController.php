@@ -5,7 +5,9 @@ namespace AppBundle\Controller;
 use AppBundle\Entity\Role;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;use Symfony\Component\HttpFoundation\Request;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 /**
  * Role controller.
@@ -22,6 +24,9 @@ class RoleController extends Controller
      */
     public function indexAction()
     {
+      if(!$this->checkSession()){
+       return $this->forward('AppBundle:Utilisateur:login');
+      }
         $em = $this->getDoctrine()->getManager();
 
         $roles = $em->getRepository('AppBundle:Role')->findAll();
@@ -39,6 +44,9 @@ class RoleController extends Controller
      */
     public function newAction(Request $request)
     {
+      if(!$this->checkSession()){
+       return $this->forward('AppBundle:Utilisateur:login');
+      }
         $role = new Role();
         $form = $this->createForm('AppBundle\Form\RoleType', $role);
         $form->handleRequest($request);
@@ -65,6 +73,9 @@ class RoleController extends Controller
      */
     public function showAction(Role $role)
     {
+      if(!$this->checkSession()){
+        return $this->forward('AppBundle:Utilisateur:login');
+      }
         $deleteForm = $this->createDeleteForm($role);
 
         return $this->render('role/show.html.twig', array(
@@ -81,6 +92,9 @@ class RoleController extends Controller
      */
     public function editAction(Request $request, Role $role)
     {
+      if(!$this->checkSession()){
+       return $this->forward('AppBundle:Utilisateur:login');
+      }
         $deleteForm = $this->createDeleteForm($role);
         $editForm = $this->createForm('AppBundle\Form\RoleType', $role);
         $editForm->handleRequest($request);
@@ -132,5 +146,13 @@ class RoleController extends Controller
             ->setMethod('DELETE')
             ->getForm()
         ;
+    }
+
+    private function checkSession(){
+      $session = new Session();
+      if($session->get('user') == null){
+        return false;
+      }
+      return true;
     }
 }

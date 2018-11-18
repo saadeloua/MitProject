@@ -5,7 +5,10 @@ namespace AppBundle\Controller;
 use AppBundle\Entity\Utilisateur;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;use Symfony\Component\HttpFoundation\Request;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Form\Forms;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 /**
  * Utilisateur controller.
@@ -14,6 +17,64 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;use Symfony\Component
  */
 class UtilisateurController extends Controller
 {
+
+  /**
+  * @Route("/login", name="utilisateur_login")
+  * @Method({"GET", "POST"})
+  */
+  public function loginAction(Request $request)
+  {
+
+    if ($request->isMethod('POST')) {
+        $form = $this->createFormBuilder()->getForm();
+        $username = $request->request->get('form')["username"];
+        $password = $request->request->get('form')["password"];
+        // si j'avais plus de temps, à deplacer dans le repo
+        $em = $this->getDoctrine()->getManager();
+        $query = $em->createQuery(
+                'SELECT u
+                FROM AppBundle:Utilisateur u
+                WHERE u.username = :username
+                AND  u.password = :password'
+                )->setParameter('password', $password)->setParameter('username', $username);
+        $utilisateur = $query->getResult();
+        if($utilisateur != null){
+          $session = new Session();
+          $session->set('user', $utilisateur);
+          return $this->redirectToRoute('utilisateur_index');
+        }
+        else{
+          $formFactory = Forms::createFormFactoryBuilder()->getFormFactory();
+          $form = $formFactory->createBuilder()
+          ->add('username')
+          ->add('password')
+          ->getForm();
+          return $this->render('utilisateur/login.html.twig', array(
+            'error' => 'Utilisateur introuvable',
+            'form' => $form->createView()
+          ));
+        }
+
+    }
+    if ($request->isMethod('GET')) {
+      $session = new Session();
+      if($session->get('user') == null){
+        $formFactory = Forms::createFormFactoryBuilder()->getFormFactory();
+        $form = $formFactory->createBuilder()
+        ->add('username')
+        ->add('password')
+        ->getForm();
+        return $this->render('utilisateur/login.html.twig', array(
+          'error' => 'Utilisateur introuvable',
+          'form' => $form->createView()
+        ));
+      }
+      else {
+        return $this->redirectToRoute('utilisateur_index');
+      }
+    }
+  }
+
     /**
      * Lists all utilisateur entities.
      *
@@ -22,6 +83,11 @@ class UtilisateurController extends Controller
      */
     public function indexAction()
     {
+
+        if(!$this->checkSession()){
+          return $this->forward('AppBundle:Utilisateur:login');
+        }
+        else{
         $em = $this->getDoctrine()->getManager();
 
         $utilisateurs = $em->getRepository('AppBundle:Utilisateur')->findAll();
@@ -29,6 +95,7 @@ class UtilisateurController extends Controller
         return $this->render('utilisateur/index.html.twig', array(
             'utilisateurs' => $utilisateurs,
         ));
+        }
     }
 
     /**
@@ -39,6 +106,9 @@ class UtilisateurController extends Controller
      */
     public function newAction(Request $request)
     {
+        if(!$this->checkSession()){
+         return $this->forward('AppBundle:Utilisateur:login');
+        }
         $utilisateur = new Utilisateur();
         $form = $this->createForm('AppBundle\Form\UtilisateurType', $utilisateur);
         $form->handleRequest($request);
@@ -58,6 +128,20 @@ class UtilisateurController extends Controller
     }
 
     /**
+     * Creates a new utilisateur entity.
+     *
+     * @Route("/logout", name="utilisateur_logout")
+     * @Method({"GET", "POST"})
+     */
+    public function logoutAction(Request $request)
+    {
+
+      $session = new Session();
+      $session->invalidate();
+      return $this->forward('AppBundle:Utilisateur:login');
+    }
+
+    /**
      * Finds and displays a utilisateur entity.
      *
      * @Route("/{id}", name="utilisateur_show")
@@ -65,6 +149,9 @@ class UtilisateurController extends Controller
      */
     public function showAction(Utilisateur $utilisateur)
     {
+      if(!$this->checkSession()){
+       return $this->forward('AppBundle:Utilisateur:login');
+      }
         $deleteForm = $this->createDeleteForm($utilisateur);
 
         return $this->render('utilisateur/show.html.twig', array(
@@ -81,6 +168,9 @@ class UtilisateurController extends Controller
      */
     public function editAction(Request $request, Utilisateur $utilisateur)
     {
+      if(!$this->checkSession()){
+       return $this->forward('AppBundle:Utilisateur:login');
+      }
         $deleteForm = $this->createDeleteForm($utilisateur);
         $editForm = $this->createForm('AppBundle\Form\UtilisateurType', $utilisateur);
         $editForm->handleRequest($request);
@@ -90,7 +180,6 @@ class UtilisateurController extends Controller
 
             return $this->redirectToRoute('utilisateur_edit', array('id' => $utilisateur->getId()));
         }
-
         return $this->render('utilisateur/edit.html.twig', array(
             'utilisateur' => $utilisateur,
             'edit_form' => $editForm->createView(),
@@ -132,5 +221,41 @@ class UtilisateurController extends Controller
             ->setMethod('DELETE')
             ->getForm()
         ;
+    }
+
+
+
+    /**
+     *
+     * @Route("/zab", name="utilisateur_zab")
+     * @Method("GET")
+     */
+    public function zabAction()
+    {
+      /*
+      public function logoutAction(Request $request)
+      {
+        return $this->render('utilisateur/logout.html.twig');
+        /*$session = new Session();
+        $session->invalidate();
+        $formFactory = Forms::createFormFactoryBuilder()->getFormFactory();
+        $form = $formFactory->createBuilder()
+        ->add('username')
+        ->add('password')
+        ->getForm();
+        return $this->render('utilisateur/login.html.twig', array(
+          'error' => 'Vous vous êtes déconnecté',
+          'form' => $form->createView()
+        ));
+      }
+      */
+    }
+
+    private function checkSession(){
+      $session = new Session();
+      if($session->get('user') == null){
+        return false;
+      }
+      return true;
     }
 }
